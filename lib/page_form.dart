@@ -5,9 +5,9 @@ import 'package:price_report/mpdf/report_pdf.dart';
 import 'package:price_report/model_pricedata.dart';
 import 'package:price_report/dialog_finish.dart';
 
-class AccountPage extends StatefulWidget {
+class PageForm extends StatefulWidget {
   @override
-  _AccountPageState createState() => new _AccountPageState();
+  _PageFormState createState() => new _PageFormState();
 }
 
 List<GlobalKey<FormState>> formKeys = [
@@ -22,14 +22,19 @@ List<GlobalKey<FormState>> formKeys = [
 
 var priceData = ModelPriceData();
 
-class _AccountPageState extends State<AccountPage> {
+class _PageFormState extends State<PageForm> {
   int _currentStep = 0;
   bool complete = false;
 
-  List<Map<String, StepState>> stepStates= [{"Perusahaan":StepState.indexed}, {"PIC":StepState.indexed}, {"Karyawan":StepState.indexed}, {"Training":StepState.indexed}
-    , {"Implementasi":StepState.indexed}
-    , {"Modifikasi":StepState.indexed}
-    , {"Email Sales":StepState.indexed}];
+  List<Map<String, StepState>> stepStates = [
+    {"Perusahaan": StepState.indexed},
+    {"PIC": StepState.indexed},
+    {"Karyawan": StepState.indexed},
+    {"Training": StepState.indexed},
+    {"Implementasi": StepState.indexed},
+    {"Modifikasi": StepState.indexed},
+    {"Email Sales": StepState.indexed}
+  ];
 
   next() {
     _currentStep < 7 ? setState(() => _currentStep += 1) : null;
@@ -60,6 +65,7 @@ class _AccountPageState extends State<AccountPage> {
             child: Column(
               children: <Widget>[
                 TextFormField(
+                    initialValue: priceData.nomor,
                     decoration: InputDecoration(labelText: 'Nomor'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -73,6 +79,7 @@ class _AccountPageState extends State<AccountPage> {
                       FilteringTextInputFormatter.digitsOnly
                     ]),
                 TextFormField(
+                    initialValue: priceData.tanggal,
                     decoration: InputDecoration(labelText: 'Tanggal'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -82,6 +89,7 @@ class _AccountPageState extends State<AccountPage> {
                       priceData.tanggal = value;
                     }),
                 TextFormField(
+                    initialValue: priceData.namaPT,
                     decoration: InputDecoration(labelText: 'Nama PT'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -91,6 +99,7 @@ class _AccountPageState extends State<AccountPage> {
                       priceData.namaPT = value;
                     }),
                 TextFormField(
+                    initialValue: priceData.npwp,
                     decoration: InputDecoration(labelText: 'NPWP'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -115,6 +124,7 @@ class _AccountPageState extends State<AccountPage> {
             child: Column(
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.picUser,
                   decoration: InputDecoration(labelText: 'PIC User'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -125,6 +135,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.picPosition,
                   decoration: InputDecoration(labelText: 'PIC Position'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -135,6 +146,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.contact,
                   decoration: InputDecoration(labelText: 'Contact'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -145,6 +157,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.email,
                   decoration: InputDecoration(labelText: 'Email'),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -156,6 +169,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.billingPic,
                   decoration: InputDecoration(labelText: 'Billing PIC'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -166,6 +180,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.billingAddress,
                   decoration: InputDecoration(labelText: 'Billing Address'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -176,6 +191,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.billingContact,
                   decoration: InputDecoration(labelText: 'Billing Contact'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -186,6 +202,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.billingEmail,
                   decoration: InputDecoration(labelText: 'Billing Email'),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -210,6 +227,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.totalEmployee,
                   decoration: InputDecoration(labelText: 'Total Employee'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -224,7 +242,8 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Diskon'),
+                  initialValue: priceData.diskonEmployee,
+                  decoration: InputDecoration(labelText: 'Diskon Karyawan'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
@@ -266,6 +285,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.hargaTraining,
                   decoration: InputDecoration(labelText: 'Harga Training'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -280,6 +300,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.diskonTraining,
                   decoration: InputDecoration(labelText: 'Diskon Training'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -314,6 +335,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.hargaImplementasi,
                   decoration: InputDecoration(labelText: 'Harga Implementasi'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -328,7 +350,9 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Diskon Implementation'),
+                  initialValue: priceData.diskonImplementasi,
+                  decoration:
+                      InputDecoration(labelText: 'Diskon Implementation'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
@@ -362,6 +386,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.hargaModifikasi,
                   decoration: InputDecoration(labelText: 'Harga Modifikasi'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -376,6 +401,7 @@ class _AccountPageState extends State<AccountPage> {
                   },
                 ),
                 TextFormField(
+                  initialValue: priceData.diskonModifikasi,
                   decoration: InputDecoration(labelText: 'Diskon Modifikasi'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -410,6 +436,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  initialValue: priceData.emailSales,
                   decoration: InputDecoration(labelText: 'Email Sales'),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -428,15 +455,29 @@ class _AccountPageState extends State<AccountPage> {
     _onStepContinue() {
       if (formKeys[_currentStep].currentState.validate()) {
         setState(() {
-          stepStates[_currentStep][stepStates[_currentStep].keys.single] = StepState.complete;
-          // StepState.complete;
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] =
+              StepState.complete;
         });
 
         next();
       } else {
         setState(() {
-          // stepStates[_currentStep] = StepState.indexed;
-          stepStates[_currentStep][stepStates[_currentStep].keys.single] = StepState.indexed;
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] =
+              StepState.indexed;
+        });
+      }
+    }
+
+    _onLastStep() {
+      if (formKeys[_currentStep].currentState.validate()) {
+        setState(() {
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] =
+              StepState.complete;
+        });
+      } else {
+        setState(() {
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] =
+              StepState.indexed;
         });
       }
     }
@@ -446,16 +487,17 @@ class _AccountPageState extends State<AccountPage> {
         title: Text('Pricelist'),
         actions: <Widget>[
           ElevatedButton(
-              onPressed: (){
+              onPressed: () {
                 List<Map<String, StepState>> notFinishForm = [];
 
                 stepStates.forEach((t) {
-                  if(t.values.single ==StepState.indexed) {
+                  if (t.values.single == StepState.indexed) {
                     notFinishForm.add(t);
                   }
                 });
 
-                DialogUtils.showCustomDialog(context, notFinishForm, onSubmit: () {
+                DialogUtils.showCustomDialog(context, notFinishForm,
+                    onSubmit: () {
                   reportView(context, priceData);
                 });
               },
@@ -470,17 +512,23 @@ class _AccountPageState extends State<AccountPage> {
             type: StepperType.vertical,
             currentStep: _currentStep,
             onStepTapped: (step) => goTo(step),
-            controlsBuilder: (BuildContext context, {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
-              if(_currentStep == steps.length-1 || _currentStep == 0) {
+            controlsBuilder: (BuildContext context,
+                {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+              if (_currentStep == steps.length - 1 || _currentStep == 0) {
                 return Row(
                   children: <Widget>[
                     Container(
-                      margin:EdgeInsets.only(top: 16),
+                      margin: EdgeInsets.only(top: 16),
                       child: ElevatedButton(
                         onPressed: () {
+                          if (_currentStep == steps.length - 1) {
+                            _onLastStep();
+                            return;
+                          }
+
                           _onStepContinue();
                         },
-                        child: Text("Submit"),
+                        child: Text("Save"),
                       ),
                     ),
                   ],
@@ -489,20 +537,24 @@ class _AccountPageState extends State<AccountPage> {
                 return Row(
                   children: <Widget>[
                     Container(
-                      margin:EdgeInsets.only(right: 8, top: 16),
+                      margin: EdgeInsets.only(right: 8, top: 16),
                       child: ElevatedButton(
-                        onPressed: () {cancel();},
-                        child: Text("Prev"),
+                        onPressed: () {
+                          cancel();
+                        },
+                        child: Text("Previous"),
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.grey)
-                        ),
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey)),
                       ),
                     ),
                     Container(
-                      margin:EdgeInsets.only(top: 16),
+                      margin: EdgeInsets.only(top: 16),
                       child: ElevatedButton(
-                        onPressed: () { _onStepContinue();},
-                        child: Text("Submit"),
+                        onPressed: () {
+                          _onStepContinue();
+                        },
+                        child: Text("Save"),
                       ),
                     ),
                   ],
@@ -516,6 +568,4 @@ class _AccountPageState extends State<AccountPage> {
   }
 }
 
-void generatePDF() {
-
-}
+void generatePDF() {}

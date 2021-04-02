@@ -4,10 +4,14 @@ class DialogUtils {
   static void showCustomDialog(BuildContext context, List<Map<String, StepState>> notFinishForm,
       {@required Function onSubmit}) {
 
-    String notFinish = "";
+    String message = "Please recheck form before generate PDF! Make sure all section fill out:\n\n";
     notFinishForm.forEach((element) {
-      notFinish = "${notFinish}✗ ${element.keys.single}\n";
+      message = "${message}✗ ${element.keys.single}\n";
     });
+
+    if(notFinishForm.isEmpty) {
+      message = "Congratulation, all section fill out! You can generate PDF now.\n\n";
+    }
 
     showDialog(
         context: context,
@@ -24,7 +28,7 @@ class DialogUtils {
                     alignment: Alignment.centerLeft,
                     child: Text("INFO")
                   ),
-                  Padding(padding: EdgeInsets.symmetric(vertical: 8), child:Text("Please recheck form before generate PDF! Make sure all section fill out:\n\n${notFinish}")),
+                  Padding(padding: EdgeInsets.symmetric(vertical: 8), child:Text(message)),
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     Padding(
                         padding: EdgeInsets.only(right: 8),
