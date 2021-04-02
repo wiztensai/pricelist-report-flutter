@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:price_report/report_pdf.dart';
+import 'package:price_report/mpdf/report_pdf.dart';
+import 'package:price_report/model_pricedata.dart';
+import 'package:price_report/dialog_finish.dart';
 
 class AccountPage extends StatefulWidget {
   @override
@@ -18,37 +20,16 @@ List<GlobalKey<FormState>> formKeys = [
   GlobalKey<FormState>()
 ];
 
-String nomor,
-    tanggal,
-    namaPT,
-    npwp,
-    picUser,
-    picPosition,
-    contact,
-    email,
-    billingPic,
-    billingAddress,
-    billingContact,
-    billingEmail,
-    totalEmployee,
-    diskonEmployee,
-    ket1,
-    hargaTraining,
-    diskonTraining,
-    ket2,
-    hargaImplementasi,
-    diskonImplementasi,
-    ket3,
-    hargaModifikasi,
-    diskonModifikasi,
-    ket4,
-    emailSales;
+var priceData = ModelPriceData();
 
 class _AccountPageState extends State<AccountPage> {
   int _currentStep = 0;
   bool complete = false;
 
-  List<StepState> stepStates = [StepState.indexed,StepState.indexed,StepState.indexed,StepState.indexed,StepState.indexed,StepState.indexed,StepState.indexed];
+  List<Map<String, StepState>> stepStates= [{"Perusahaan":StepState.indexed}, {"PIC":StepState.indexed}, {"Karyawan":StepState.indexed}, {"Training":StepState.indexed}
+    , {"Implementasi":StepState.indexed}
+    , {"Modifikasi":StepState.indexed}
+    , {"Email Sales":StepState.indexed}];
 
   next() {
     _currentStep < 7 ? setState(() => _currentStep += 1) : null;
@@ -65,14 +46,13 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-          state: stepStates[0],
+          state: stepStates[0].values.single,
           isActive: _currentStep == 0,
           title: const Text("Perusahaan"),
           content: Form(
@@ -86,7 +66,7 @@ class _AccountPageState extends State<AccountPage> {
                         return 'Please enter some text';
                       }
 
-                      nomor = value;
+                      priceData.nomor = value;
                     },
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -99,7 +79,7 @@ class _AccountPageState extends State<AccountPage> {
                         return 'Please enter some text';
                       }
 
-                      tanggal = value;
+                      priceData.tanggal = value;
                     }),
                 TextFormField(
                     decoration: InputDecoration(labelText: 'Nama PT'),
@@ -108,7 +88,7 @@ class _AccountPageState extends State<AccountPage> {
                         return 'Please enter some text';
                       }
 
-                      namaPT = value;
+                      priceData.namaPT = value;
                     }),
                 TextFormField(
                     decoration: InputDecoration(labelText: 'NPWP'),
@@ -117,7 +97,7 @@ class _AccountPageState extends State<AccountPage> {
                         return 'Please enter some text';
                       }
 
-                      npwp = value;
+                      priceData.npwp = value;
                     },
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -127,7 +107,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           )),
       Step(
-          state: stepStates[1],
+          state: stepStates[1].values.single,
           isActive: _currentStep == 1,
           title: const Text('PIC '),
           content: Form(
@@ -141,7 +121,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    picUser = value;
+                    priceData.picUser = value;
                   },
                 ),
                 TextFormField(
@@ -151,7 +131,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    picPosition = value;
+                    priceData.picPosition = value;
                   },
                 ),
                 TextFormField(
@@ -161,7 +141,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    contact = value;
+                    priceData.contact = value;
                   },
                 ),
                 TextFormField(
@@ -172,7 +152,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    email = value;
+                    priceData.email = value;
                   },
                 ),
                 TextFormField(
@@ -182,7 +162,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    billingPic = value;
+                    priceData.billingPic = value;
                   },
                 ),
                 TextFormField(
@@ -192,7 +172,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    billingAddress = value;
+                    priceData.billingAddress = value;
                   },
                 ),
                 TextFormField(
@@ -202,7 +182,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    billingContact = value;
+                    priceData.billingContact = value;
                   },
                 ),
                 TextFormField(
@@ -213,14 +193,14 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    billingEmail = value;
+                    priceData.billingEmail = value;
                   },
                 )
               ],
             ),
           )),
       Step(
-          state: stepStates[2],
+          state: stepStates[2].values.single,
           isActive: _currentStep == 2,
           title: const Text('Karyawan'),
           content: Form(
@@ -240,7 +220,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    totalEmployee = value;
+                    priceData.totalEmployee = value;
                   },
                 ),
                 TextFormField(
@@ -254,7 +234,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    diskonEmployee = value;
+                    priceData.diskonEmployee = value;
                   },
                 ),
                 TextFormField(
@@ -276,7 +256,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           )),
       Step(
-          state: stepStates[3],
+          state: stepStates[3].values.single,
           isActive: _currentStep == 3,
           title: const Text('Training'),
           content: Form(
@@ -296,7 +276,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    hargaTraining = value;
+                    priceData.hargaTraining = value;
                   },
                 ),
                 TextFormField(
@@ -310,7 +290,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    diskonTraining = value;
+                    priceData.diskonTraining = value;
                   },
                 ),
                 TextFormField(
@@ -324,7 +304,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           )),
       Step(
-          state: stepStates[4],
+          state: stepStates[4].values.single,
           isActive: _currentStep == 4,
           title: const Text('Implementasi'),
           content: Form(
@@ -344,7 +324,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    hargaImplementasi = value;
+                    priceData.hargaImplementasi = value;
                   },
                 ),
                 TextFormField(
@@ -358,7 +338,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    diskonImplementasi = value;
+                    priceData.diskonImplementasi = value;
                   },
                 ),
                 TextFormField(
@@ -372,7 +352,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           )),
       Step(
-          state: stepStates[5],
+          state: stepStates[5].values.single,
           isActive: _currentStep == 5,
           title: const Text('Modifikasi'),
           content: Form(
@@ -392,7 +372,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    hargaModifikasi = value;
+                    priceData.hargaModifikasi = value;
                   },
                 ),
                 TextFormField(
@@ -406,7 +386,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    diskonModifikasi = value;
+                    priceData.diskonModifikasi = value;
                   },
                 ),
                 TextFormField(
@@ -420,7 +400,7 @@ class _AccountPageState extends State<AccountPage> {
             ),
           )),
       Step(
-          state: stepStates[6],
+          state: stepStates[6].values.single,
           isActive: _currentStep == 6,
           title: const Text('Email Sales'),
           content: Form(
@@ -437,7 +417,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Please enter some text';
                     }
 
-                    emailSales = value;
+                    priceData.emailSales = value;
                   },
                 ),
               ],
@@ -445,13 +425,39 @@ class _AccountPageState extends State<AccountPage> {
           )),
     ];
 
+    _onStepContinue() {
+      if (formKeys[_currentStep].currentState.validate()) {
+        setState(() {
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] = StepState.complete;
+          // StepState.complete;
+        });
+
+        next();
+      } else {
+        setState(() {
+          // stepStates[_currentStep] = StepState.indexed;
+          stepStates[_currentStep][stepStates[_currentStep].keys.single] = StepState.indexed;
+        });
+      }
+    }
+
     return new Scaffold(
       appBar: AppBar(
         title: Text('Pricelist'),
         actions: <Widget>[
           ElevatedButton(
               onPressed: (){
-                reportView(context);
+                List<Map<String, StepState>> notFinishForm = [];
+
+                stepStates.forEach((t) {
+                  if(t.values.single ==StepState.indexed) {
+                    notFinishForm.add(t);
+                  }
+                });
+
+                DialogUtils.showCustomDialog(context, notFinishForm, onSubmit: () {
+                  reportView(context, priceData);
+                });
               },
               style: ElevatedButton.styleFrom(shadowColor: Colors.transparent),
               child: Text("FINISH"))
@@ -463,25 +469,48 @@ class _AccountPageState extends State<AccountPage> {
             steps: steps,
             type: StepperType.vertical,
             currentStep: _currentStep,
-            onStepContinue: () {
-              if (formKeys[_currentStep].currentState.validate()) {
-                setState(() {
-                  stepStates[_currentStep] = StepState.complete;
-                });
-
-                next();
+            onStepTapped: (step) => goTo(step),
+            controlsBuilder: (BuildContext context, {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+              if(_currentStep == steps.length-1 || _currentStep == 0) {
+                return Row(
+                  children: <Widget>[
+                    Container(
+                      margin:EdgeInsets.only(top: 16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _onStepContinue();
+                        },
+                        child: Text("Submit"),
+                      ),
+                    ),
+                  ],
+                );
               } else {
-                setState(() {
-                  stepStates[_currentStep] = StepState.indexed;
-                });
+                return Row(
+                  children: <Widget>[
+                    Container(
+                      margin:EdgeInsets.only(right: 8, top: 16),
+                      child: ElevatedButton(
+                        onPressed: () {cancel();},
+                        child: Text("Prev"),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Colors.grey)
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin:EdgeInsets.only(top: 16),
+                      child: ElevatedButton(
+                        onPressed: () { _onStepContinue();},
+                        child: Text("Submit"),
+                      ),
+                    ),
+                  ],
+                );
               }
             },
-            onStepTapped: (step) => goTo(step),
-            onStepCancel: cancel,
           ),
         ),
-
-        // ElevatedButton(onPressed: () {}, child: Text("tes"))
       ]),
     );
   }
