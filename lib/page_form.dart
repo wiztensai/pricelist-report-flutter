@@ -24,20 +24,18 @@ List<GlobalKey<FormState>> formKeys = [
   GlobalKey<FormState>()
 ];
 
-var priceData = ModelPriceData();
-
 class _PageFormState extends State<PageForm> {
   int _currentStep = 0;
   bool complete = false;
-  static const String _currency = "IDR. ";
+  ModelPriceData priceData = ModelPriceData();
 
   List<Map<String, StepState>> stepStates = [
-    {"Perusahaan": StepState.indexed},
+    {"Company": StepState.indexed},
     {"PIC": StepState.indexed},
-    {"Karyawan": StepState.indexed},
+    {"Employee": StepState.indexed},
     {"Training": StepState.indexed},
-    {"Implementasi": StepState.indexed},
-    {"Modifikasi": StepState.indexed},
+    {"Implementation": StepState.indexed},
+    {"Modification": StepState.indexed},
     {"Email Sales": StepState.indexed}
   ];
 
@@ -53,11 +51,37 @@ class _PageFormState extends State<PageForm> {
     setState(() => _currentStep = step);
   }
 
-  TextEditingController totalEmployeeController = TextEditingController(text: notNull_Int(priceData.totalEmployee));
+  TextEditingController totalEmployeeController;
+  TextEditingController tanggalController;
+
+  DateTime selectedDate = DateTime.now();
+
+  _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selectedDate)
+      setState(() {
+        selectedDate = picked;
+        tanggalController.text = _formatDate(selectedDate);
+      });
+  }
+
+  String _formatDate(DateTime dt) {
+    return DateFormat('d MMMM yyyy').format(dt);
+  }
 
   @override
   void initState() {
     super.initState();
+    priceData.tanggal = _formatDate(selectedDate);
+
+    totalEmployeeController =
+        TextEditingController(text: notNull_Int(priceData.totalEmployee));
+    tanggalController = TextEditingController(text: priceData.tanggal);
   }
 
   @override
@@ -66,14 +90,14 @@ class _PageFormState extends State<PageForm> {
       Step(
           state: stepStates[0].values.single,
           isActive: _currentStep == 0,
-          title: const Text("Perusahaan"),
+          title: const Text("Company"),
           content: Form(
             key: formKeys[0],
             child: Column(
               children: <Widget>[
                 TextFormField(
                     initialValue: priceData.nomor,
-                    decoration: InputDecoration(labelText: 'Nomor'),
+                    decoration: InputDecoration(labelText: 'Number'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter some text';
@@ -86,8 +110,12 @@ class _PageFormState extends State<PageForm> {
                       FilteringTextInputFormatter.digitsOnly
                     ]),
                 TextFormField(
-                    initialValue: priceData.tanggal,
-                    decoration: InputDecoration(labelText: 'Tanggal'),
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    readOnly: true,
+                    controller: tanggalController,
+                    decoration: InputDecoration(labelText: 'Date'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter some text';
@@ -97,7 +125,7 @@ class _PageFormState extends State<PageForm> {
                     }),
                 TextFormField(
                     initialValue: priceData.namaPT,
-                    decoration: InputDecoration(labelText: 'Nama PT'),
+                    decoration: InputDecoration(labelText: 'Company Name'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter some text';
@@ -226,7 +254,7 @@ class _PageFormState extends State<PageForm> {
       Step(
           state: stepStates[2].values.single,
           isActive: _currentStep == 2,
-          title: const Text('Karyawan'),
+          title: const Text('Employee'),
           content: Form(
             key: formKeys[2],
             child: Column(
@@ -235,27 +263,29 @@ class _PageFormState extends State<PageForm> {
               children: <Widget>[
                 TextFormField(
                   controller: totalEmployeeController,
-                  decoration: InputDecoration(labelText: 'Total Employee'),
+                  decoration:
+                      InputDecoration(labelText: 'Total Employee (min. 25)'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                     CurrencyInputFormatter(),
                   ],
                   validator: (value) {
-                    if(value == null || value.isEmpty) {
-
+                    if (value == null || value.isEmpty) {
                       setState(() {
                         totalEmployeeController.text = "25";
                         priceData.totalEmployee = 25;
 
-                        priceData.pricePerEmployee = totalPerkaryawan(priceData.totalEmployee);
-                        priceData.allEmployeePrice = priceData.totalEmployee * priceData.pricePerEmployee;
+                        priceData.pricePerEmployee =
+                            totalPerkaryawan(priceData.totalEmployee);
+                        priceData.allEmployeePrice = priceData.totalEmployee *
+                            priceData.pricePerEmployee;
                       });
 
                       return 'Minimal 25 total karyawan';
                     } else {
                       int _value = clearCurrencyFormat(value);
-                      if(_value < 25) {
+                      if (_value < 25) {
                         setState(() {
                           totalEmployeeController.text = "25"; // force text
                         });
@@ -265,15 +295,18 @@ class _PageFormState extends State<PageForm> {
                       }
 
                       setState(() {
-                        priceData.pricePerEmployee = totalPerkaryawan(priceData.totalEmployee);
-                        priceData.allEmployeePrice = priceData.totalEmployee * priceData.pricePerEmployee;
+                        priceData.pricePerEmployee =
+                            totalPerkaryawan(priceData.totalEmployee);
+                        priceData.allEmployeePrice = priceData.totalEmployee *
+                            priceData.pricePerEmployee;
                       });
                     }
                   },
                 ),
                 TextFormField(
                   initialValue: notNull_Int(priceData.diskonEmployee),
-                  decoration: InputDecoration(labelText: 'Diskon Karyawan', suffixText: "%"),
+                  decoration: InputDecoration(
+                      labelText: 'Discount', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -287,24 +320,29 @@ class _PageFormState extends State<PageForm> {
                     }
 
                     setState(() {
-                      priceData.afterDiscEmployee = finalPrice(priceData.allEmployeePrice, priceData.diskonEmployee);
+                      priceData.afterDiscEmployee = finalPrice(
+                          priceData.allEmployeePrice, priceData.diskonEmployee);
                     });
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Keterangan 1'),
+                  decoration: InputDecoration(labelText: 'Additional Information 1'),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
-                  child: Text("Harga: ${currencyFormat(priceData.allEmployeePrice)}", style: TextStyle()),
+                  child: Text(
+                      "Total Price: ${currencyFormat(priceData.allEmployeePrice)}",
+                      style: TextStyle()),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                  child: Text("Harga Perkaryawan: ${currencyFormat(priceData.pricePerEmployee)}"),
+                  child: Text(
+                      "Price per-Employee: ${currencyFormat(priceData.pricePerEmployee)}"),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                  child: Text("Setelah Diskon: ${currencyFormat(priceData.afterDiscEmployee)}"),
+                  child: Text(
+                      "Price after Discount: ${currencyFormat(priceData.afterDiscEmployee)}"),
                 ),
               ],
             ),
@@ -321,7 +359,8 @@ class _PageFormState extends State<PageForm> {
               children: <Widget>[
                 TextFormField(
                   initialValue: notNull_Int(priceData.hargaTraining),
-                  decoration: InputDecoration(labelText: 'Harga Training', prefixText: "IDR. "),
+                  decoration: InputDecoration(
+                      labelText: 'Training Price', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -338,7 +377,8 @@ class _PageFormState extends State<PageForm> {
                 ),
                 TextFormField(
                   initialValue: notNull_Int(priceData.diskonTraining),
-                  decoration: InputDecoration(labelText: 'Diskon Training', suffixText: "%"),
+                  decoration: InputDecoration(
+                      labelText: 'Discount', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -352,15 +392,17 @@ class _PageFormState extends State<PageForm> {
                     }
 
                     setState(() {
-                      priceData.afterDiscTraining = finalPrice(priceData.hargaTraining, priceData.diskonTraining);
+                      priceData.afterDiscTraining = finalPrice(
+                          priceData.hargaTraining, priceData.diskonTraining);
                     });
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Keterangan 2'),
+                  decoration: InputDecoration(labelText: 'Additional Information 2'),
                 ),
                 Padding(
-                  child: Text("Total Harga Training: ${currencyFormat(priceData.afterDiscTraining)}"),
+                  child: Text(
+                      "Total Training Price: ${currencyFormat(priceData.afterDiscTraining)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -369,7 +411,7 @@ class _PageFormState extends State<PageForm> {
       Step(
           state: stepStates[4].values.single,
           isActive: _currentStep == 4,
-          title: const Text('Implementasi'),
+          title: const Text('Implementation'),
           content: Form(
             key: formKeys[4],
             child: Column(
@@ -378,7 +420,8 @@ class _PageFormState extends State<PageForm> {
               children: <Widget>[
                 TextFormField(
                   initialValue: notNull_Int(priceData.hargaImplementasi),
-                  decoration: InputDecoration(labelText: 'Harga Implementasi', prefixText: "IDR. "),
+                  decoration: InputDecoration(
+                      labelText: 'Implementation Price', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -395,8 +438,8 @@ class _PageFormState extends State<PageForm> {
                 ),
                 TextFormField(
                   initialValue: notNull_Int(priceData.diskonImplementasi),
-                  decoration:
-                      InputDecoration(labelText: 'Diskon Implementation', suffixText: "%"),
+                  decoration: InputDecoration(
+                      labelText: 'Discount', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -410,15 +453,18 @@ class _PageFormState extends State<PageForm> {
                     }
 
                     setState(() {
-                      priceData.afterDiscImplementasi = finalPrice(priceData.hargaImplementasi, priceData.diskonImplementasi);
+                      priceData.afterDiscImplementasi = finalPrice(
+                          priceData.hargaImplementasi,
+                          priceData.diskonImplementasi);
                     });
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Keterangan 3'),
+                  decoration: InputDecoration(labelText: 'Additional Information 3'),
                 ),
                 Padding(
-                  child: Text("Total Harga Implementasi: ${currencyFormat(priceData.afterDiscImplementasi)}"),
+                  child: Text(
+                      "Implementation Total Price: ${currencyFormat(priceData.afterDiscImplementasi)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -427,7 +473,7 @@ class _PageFormState extends State<PageForm> {
       Step(
           state: stepStates[5].values.single,
           isActive: _currentStep == 5,
-          title: const Text('Modifikasi'),
+          title: const Text('Modification'),
           content: Form(
             key: formKeys[5],
             child: Column(
@@ -436,7 +482,8 @@ class _PageFormState extends State<PageForm> {
               children: <Widget>[
                 TextFormField(
                   initialValue: notNull_Int(priceData.hargaModifikasi),
-                  decoration: InputDecoration(labelText: 'Harga Modifikasi', prefixText: "IDR. "),
+                  decoration: InputDecoration(
+                      labelText: 'Modification Price', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -453,7 +500,8 @@ class _PageFormState extends State<PageForm> {
                 ),
                 TextFormField(
                   initialValue: notNull_Int(priceData.diskonModifikasi),
-                  decoration: InputDecoration(labelText: 'Diskon Modifikasi', suffixText: '%'),
+                  decoration: InputDecoration(
+                      labelText: 'Discount', suffixText: '%'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
@@ -467,15 +515,18 @@ class _PageFormState extends State<PageForm> {
                     }
 
                     setState(() {
-                      priceData.afterDiscModifikasi = finalPrice(priceData.hargaModifikasi, priceData.diskonModifikasi);
+                      priceData.afterDiscModifikasi = finalPrice(
+                          priceData.hargaModifikasi,
+                          priceData.diskonModifikasi);
                     });
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Keterangan 4'),
+                  decoration: InputDecoration(labelText: 'Additional Information 4'),
                 ),
                 Padding(
-                  child: Text("Total Harga Modifikasi: ${currencyFormat(priceData.afterDiscModifikasi)}"),
+                  child: Text(
+                      "Modification Total Price: ${currencyFormat(priceData.afterDiscModifikasi)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -553,111 +604,107 @@ class _PageFormState extends State<PageForm> {
                 });
 
                 DialogUtils.showCustomDialog(context, notFinishForm,
-                    onSubmit: () {
-                  reportView(context, priceData);
+                    onSubmit: (langCode) {
+                  reportView(context, priceData, langCode);
                 });
               },
               style: ElevatedButton.styleFrom(shadowColor: Colors.transparent),
               child: Text("FINISH"))
         ],
       ),
-      body: Column(children: <Widget>[
-        Expanded(
-          child: Stepper(
-            steps: steps,
-            type: StepperType.vertical,
-            currentStep: _currentStep,
-            onStepTapped: (step) => goTo(step),
-            controlsBuilder: (BuildContext context,
-                {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
-              if (_currentStep == steps.length - 1 || _currentStep == 0) {
-                return Row(
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_currentStep == steps.length - 1) {
-                            _onLastStep();
-                            return;
-                          }
+      body: Stepper(
+        steps: steps,
+        type: StepperType.vertical,
+        currentStep: _currentStep,
+        onStepTapped: (step) => goTo(step),
+        controlsBuilder: (BuildContext context,
+            {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+          if (_currentStep == steps.length - 1 || _currentStep == 0) {
+            return Row(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_currentStep == steps.length - 1) {
+                        _onLastStep();
+                        return;
+                      }
 
-                          _onStepContinue();
-                        },
-                        child: Text("Save"),
-                      ),
-                    ),
-                  ],
-                );
-              } else if( _currentStep >= 2 &&  _currentStep <= 5) {
-                return Row(
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(right: 8, top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          cancel();
-                        },
-                        child: Text("Previous"),
-                        style: ButtonStyle(
-                            backgroundColor:
-                            MaterialStateProperty.all(Colors.grey)),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 8, top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _onLastStep();
-                        },
-                        child: Text("Calculate"),
-                        style: ButtonStyle(
-                            backgroundColor:
-                            MaterialStateProperty.all(Colors.green)),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _onStepContinue();
-                        },
-                        child: Text("Next"),
-                      ),
-                    ),
-                  ],
-                );
-              } else {
-                return Row(
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(right: 8, top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          cancel();
-                        },
-                        child: Text("Previous"),
-                        style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all(Colors.grey)),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(top: 16),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _onStepContinue();
-                        },
-                        child: Text("Save"),
-                      ),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ),
-      ]),
+                      _onStepContinue();
+                    },
+                    child: Text("Save"),
+                  ),
+                ),
+              ],
+            );
+          } else if (_currentStep >= 2 && _currentStep <= 5) {
+            return Row(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(right: 8, top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      cancel();
+                    },
+                    child: Text("Previous"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                        MaterialStateProperty.all(Colors.grey)),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(right: 8, top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _onLastStep();
+                    },
+                    child: Text("Calculate"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                        MaterialStateProperty.all(Colors.lightGreen)),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _onStepContinue();
+                    },
+                    child: Text("Next"),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Row(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(right: 8, top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      cancel();
+                    },
+                    child: Text("Previous"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                        MaterialStateProperty.all(Colors.grey)),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _onStepContinue();
+                    },
+                    child: Text("Save"),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
 }

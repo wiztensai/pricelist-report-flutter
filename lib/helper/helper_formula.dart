@@ -43,10 +43,24 @@ int finalPrice(int firstPrice, int diskon) {
   }
 }
 
-String currencyFormat(int number) {
+String currencyFormat(int number, {bool noPrefix=false}) {
   if(number != null && number != 0) {
     var f = NumberFormat("#,##0").format(number);
-    return "IDR. "+f.toString();
+
+    if(noPrefix) {
+      return f.toString();
+    } else {
+      return "IDR. "+f.toString();
+    }
+  } else {
+    return "-";
+  }
+}
+
+String discountFormat(int number) {
+  if(number != null && number != 0) {
+    var f = NumberFormat("#,##0").format(number);
+    return "${f.toString()} %";
   } else {
     return "-";
   }
