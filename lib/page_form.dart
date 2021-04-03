@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'file:///C:/Users/jetwiz/Documents/Flutter%20Project/price_report/lib/helper/helper_formula.dart';
 import 'package:price_report/mpdf/report_pdf.dart';
 import 'package:price_report/model_pricedata.dart';
 import 'package:price_report/dialog_finish.dart';
+import 'package:intl/intl.dart';
+import 'helper/currency_input_formatter.dart';
+import 'helper/discount_input_formatter.dart';
 
 class PageForm extends StatefulWidget {
   @override
@@ -25,6 +29,7 @@ var priceData = ModelPriceData();
 class _PageFormState extends State<PageForm> {
   int _currentStep = 0;
   bool complete = false;
+  static const String _currency = "IDR. ";
 
   List<Map<String, StepState>> stepStates = [
     {"Perusahaan": StepState.indexed},
@@ -47,6 +52,8 @@ class _PageFormState extends State<PageForm> {
   goTo(int step) {
     setState(() => _currentStep = step);
   }
+
+  TextEditingController totalEmployeeController = TextEditingController(text: notNull_Int(priceData.totalEmployee));
 
   @override
   void initState() {
@@ -227,33 +234,61 @@ class _PageFormState extends State<PageForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
-                  initialValue: priceData.totalEmployee,
+                  controller: totalEmployeeController,
                   decoration: InputDecoration(labelText: 'Total Employee'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
                   ],
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
-                    }
+                    if(value == null || value.isEmpty) {
 
-                    priceData.totalEmployee = value;
+                      setState(() {
+                        totalEmployeeController.text = "25";
+                        priceData.totalEmployee = 25;
+
+                        priceData.pricePerEmployee = totalPerkaryawan(priceData.totalEmployee);
+                        priceData.allEmployeePrice = priceData.totalEmployee * priceData.pricePerEmployee;
+                      });
+
+                      return 'Minimal 25 total karyawan';
+                    } else {
+                      int _value = clearCurrencyFormat(value);
+                      if(_value < 25) {
+                        setState(() {
+                          totalEmployeeController.text = "25"; // force text
+                        });
+                        priceData.totalEmployee = 25;
+                      } else {
+                        priceData.totalEmployee = _value;
+                      }
+
+                      setState(() {
+                        priceData.pricePerEmployee = totalPerkaryawan(priceData.totalEmployee);
+                        priceData.allEmployeePrice = priceData.totalEmployee * priceData.pricePerEmployee;
+                      });
+                    }
                   },
                 ),
                 TextFormField(
-                  initialValue: priceData.diskonEmployee,
-                  decoration: InputDecoration(labelText: 'Diskon Karyawan'),
+                  initialValue: notNull_Int(priceData.diskonEmployee),
+                  decoration: InputDecoration(labelText: 'Diskon Karyawan', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                      priceData.diskonEmployee = 0;
+                    } else {
+                      priceData.diskonEmployee = int.parse(value);
                     }
 
-                    priceData.diskonEmployee = value;
+                    setState(() {
+                      priceData.afterDiscEmployee = finalPrice(priceData.allEmployeePrice, priceData.diskonEmployee);
+                    });
                   },
                 ),
                 TextFormField(
@@ -261,15 +296,15 @@ class _PageFormState extends State<PageForm> {
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
-                  child: Text("Harga: -", style: TextStyle()),
+                  child: Text("Harga: ${currencyFormat(priceData.allEmployeePrice)}", style: TextStyle()),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                  child: Text("Harga Perkaryawan: -"),
+                  child: Text("Harga Perkaryawan: ${currencyFormat(priceData.pricePerEmployee)}"),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                  child: Text("Setelah Diskon: -"),
+                  child: Text("Setelah Diskon: ${currencyFormat(priceData.afterDiscEmployee)}"),
                 ),
               ],
             ),
@@ -285,40 +320,47 @@ class _PageFormState extends State<PageForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
-                  initialValue: priceData.hargaTraining,
-                  decoration: InputDecoration(labelText: 'Harga Training'),
+                  initialValue: notNull_Int(priceData.hargaTraining),
+                  decoration: InputDecoration(labelText: 'Harga Training', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(),
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
+                      priceData.hargaTraining = null;
                       return 'Please enter some text';
                     }
 
-                    priceData.hargaTraining = value;
+                    priceData.hargaTraining = clearCurrencyFormat(value);
                   },
                 ),
                 TextFormField(
-                  initialValue: priceData.diskonTraining,
-                  decoration: InputDecoration(labelText: 'Diskon Training'),
+                  initialValue: notNull_Int(priceData.diskonTraining),
+                  decoration: InputDecoration(labelText: 'Diskon Training', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                      priceData.diskonTraining = 0;
+                    } else {
+                      priceData.diskonTraining = int.parse(value);
                     }
 
-                    priceData.diskonTraining = value;
+                    setState(() {
+                      priceData.afterDiscTraining = finalPrice(priceData.hargaTraining, priceData.diskonTraining);
+                    });
                   },
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Keterangan 2'),
                 ),
                 Padding(
-                  child: Text("Total Harga Training: -"),
+                  child: Text("Total Harga Training: ${currencyFormat(priceData.afterDiscTraining)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -335,41 +377,48 @@ class _PageFormState extends State<PageForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
-                  initialValue: priceData.hargaImplementasi,
-                  decoration: InputDecoration(labelText: 'Harga Implementasi'),
+                  initialValue: notNull_Int(priceData.hargaImplementasi),
+                  decoration: InputDecoration(labelText: 'Harga Implementasi', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
+                      priceData.hargaImplementasi = null;
                       return 'Please enter some text';
                     }
 
-                    priceData.hargaImplementasi = value;
+                    priceData.hargaImplementasi = clearCurrencyFormat(value);
                   },
                 ),
                 TextFormField(
-                  initialValue: priceData.diskonImplementasi,
+                  initialValue: notNull_Int(priceData.diskonImplementasi),
                   decoration:
-                      InputDecoration(labelText: 'Diskon Implementation'),
+                      InputDecoration(labelText: 'Diskon Implementation', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                      priceData.diskonImplementasi = 0;
+                    } else {
+                      priceData.diskonImplementasi = int.parse(value);
                     }
 
-                    priceData.diskonImplementasi = value;
+                    setState(() {
+                      priceData.afterDiscImplementasi = finalPrice(priceData.hargaImplementasi, priceData.diskonImplementasi);
+                    });
                   },
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Keterangan 3'),
                 ),
                 Padding(
-                  child: Text("Total Harga Implementasi: -"),
+                  child: Text("Total Harga Implementasi: ${currencyFormat(priceData.afterDiscImplementasi)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -386,40 +435,47 @@ class _PageFormState extends State<PageForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
-                  initialValue: priceData.hargaModifikasi,
-                  decoration: InputDecoration(labelText: 'Harga Modifikasi'),
+                  initialValue: notNull_Int(priceData.hargaModifikasi),
+                  decoration: InputDecoration(labelText: 'Harga Modifikasi', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
+                      priceData.hargaModifikasi = null;
                       return 'Please enter some text';
                     }
 
-                    priceData.hargaModifikasi = value;
+                    priceData.hargaModifikasi = clearCurrencyFormat(value);
                   },
                 ),
                 TextFormField(
-                  initialValue: priceData.diskonModifikasi,
-                  decoration: InputDecoration(labelText: 'Diskon Modifikasi'),
+                  initialValue: notNull_Int(priceData.diskonModifikasi),
+                  decoration: InputDecoration(labelText: 'Diskon Modifikasi', suffixText: '%'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                    FilteringTextInputFormatter.digitsOnly,
+                    DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                      priceData.diskonModifikasi = 0;
+                    } else {
+                      priceData.diskonModifikasi = int.parse(value);
                     }
 
-                    priceData.diskonModifikasi = value;
+                    setState(() {
+                      priceData.afterDiscModifikasi = finalPrice(priceData.hargaModifikasi, priceData.diskonModifikasi);
+                    });
                   },
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Keterangan 4'),
                 ),
                 Padding(
-                  child: Text("Total Harga Modifikasi: -"),
+                  child: Text("Total Harga Modifikasi: ${currencyFormat(priceData.afterDiscModifikasi)}"),
                   padding: EdgeInsets.fromLTRB(0, 16, 0, 8),
                 )
               ],
@@ -529,6 +585,44 @@ class _PageFormState extends State<PageForm> {
                           _onStepContinue();
                         },
                         child: Text("Save"),
+                      ),
+                    ),
+                  ],
+                );
+              } else if( _currentStep >= 2 &&  _currentStep <= 5) {
+                return Row(
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(right: 8, top: 16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          cancel();
+                        },
+                        child: Text("Previous"),
+                        style: ButtonStyle(
+                            backgroundColor:
+                            MaterialStateProperty.all(Colors.grey)),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 8, top: 16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _onLastStep();
+                        },
+                        child: Text("Calculate"),
+                        style: ButtonStyle(
+                            backgroundColor:
+                            MaterialStateProperty.all(Colors.green)),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _onStepContinue();
+                        },
+                        child: Text("Next"),
                       ),
                     ),
                   ],
