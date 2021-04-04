@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jetwiz.price_report">
    <application
-        android:label="price_report"
+        android:label="Pricelist Report"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

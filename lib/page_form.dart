@@ -104,11 +104,7 @@ class _PageFormState extends State<PageForm> {
                       }
 
                       priceData.nomor = value;
-                    },
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly
-                    ]),
+                    }),
                 TextFormField(
                     onTap: () {
                       _selectDate(context);
