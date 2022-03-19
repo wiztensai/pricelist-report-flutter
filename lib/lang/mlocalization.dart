@@ -89,7 +89,7 @@ class MLocalizations {
     }
   };
 
-  String x(key) {
-    return _localizedValues[locale.languageCode][key];
+  String? x(key) {
+    return _localizedValues[locale.languageCode]![key];
   }
 }

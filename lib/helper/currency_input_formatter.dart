@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class CurrencyInputFormatter extends TextInputFormatter {
-  CurrencyInputFormatter({this.maxDigits});
+  CurrencyInputFormatter({this.maxDigits = 0});
   final int maxDigits;
 
   TextEditingValue formatEditUpdate(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'file:///C:/Users/jetwiz/Documents/Flutter%20Project/price_report/lib/helper/helper_formula.dart';
 import 'package:price_report/mpdf/report_pdf.dart';
@@ -51,13 +52,13 @@ class _PageFormState extends State<PageForm> {
     setState(() => _currentStep = step);
   }
 
-  TextEditingController totalEmployeeController;
-  TextEditingController tanggalController;
+  late TextEditingController totalEmployeeController;
+  late TextEditingController tanggalController;
 
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime(2000),
@@ -79,8 +80,7 @@ class _PageFormState extends State<PageForm> {
     super.initState();
     priceData.tanggal = _formatDate(selectedDate);
 
-    totalEmployeeController =
-        TextEditingController(text: notNull_Int(priceData.totalEmployee));
+    totalEmployeeController = TextEditingController(text: notNull_Int(priceData.totalEmployee));
     tanggalController = TextEditingController(text: priceData.tanggal);
   }
 
@@ -260,11 +260,11 @@ class _PageFormState extends State<PageForm> {
                 TextFormField(
                   controller: totalEmployeeController,
                   decoration:
-                      InputDecoration(labelText: 'Total Employee (min. 25)'),
+                  InputDecoration(labelText: 'Total Employee (min. 25)'),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter(),
+                    // CurrencyInputFormatter(),
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -300,13 +300,13 @@ class _PageFormState extends State<PageForm> {
                   },
                 ),
                 TextFormField(
-                  initialValue: notNull_Int(priceData.diskonEmployee),
+                  // initialValue: notNull_Int(priceData.diskonEmployee),
                   decoration: InputDecoration(
                       labelText: 'Discount', suffixText: "%"),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    DiscountInputFormatter()
+                    // DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -354,21 +354,31 @@ class _PageFormState extends State<PageForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
-                  initialValue: notNull_Int(priceData.hargaTraining),
-                  decoration: InputDecoration(
-                      labelText: 'Training Price', prefixText: "IDR. "),
+                  // initialValue: notNull_Int(priceData.hargaTraining),
+                  decoration: InputDecoration(labelText: 'Training Price', prefixText: "IDR. "),
                   keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter(),
+                  inputFormatters: [
+                    // FilteringTextInputFormatter.digitsOnly,
+                    // MoneyInputFormatter(
+                    //   // leadingSymbol: "Rp",
+                    //     mantissaLength: 0,
+                    //     useSymbolPadding: true
+                    // )
                   ],
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      priceData.hargaTraining = null;
-                      return 'Please enter some text';
+                    var f2 = value?.replaceAll(",", "");
+
+                    if (f2 == null || f2.isEmpty) {
+                      return "Please complete the field";
+                    }
+
+                    if(int.parse(f2) <= 0) {
+                      return "Please fill the right price";
                     }
 
                     priceData.hargaTraining = clearCurrencyFormat(value);
+
+                    return null;
                   },
                 ),
                 TextFormField(
@@ -378,7 +388,7 @@ class _PageFormState extends State<PageForm> {
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    DiscountInputFormatter()
+                    // DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -421,11 +431,11 @@ class _PageFormState extends State<PageForm> {
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter()
+                    // CurrencyInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      priceData.hargaImplementasi = null;
+                      priceData.hargaImplementasi = 0;
                       return 'Please enter some text';
                     }
 
@@ -439,7 +449,7 @@ class _PageFormState extends State<PageForm> {
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    DiscountInputFormatter()
+                    // DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -483,11 +493,11 @@ class _PageFormState extends State<PageForm> {
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    CurrencyInputFormatter()
+                    // CurrencyInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      priceData.hargaModifikasi = null;
+                      priceData.hargaModifikasi = 0;
                       return 'Please enter some text';
                     }
 
@@ -501,7 +511,7 @@ class _PageFormState extends State<PageForm> {
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                    DiscountInputFormatter()
+                    // DiscountInputFormatter()
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -556,7 +566,7 @@ class _PageFormState extends State<PageForm> {
     ];
 
     _onStepContinue() {
-      if (formKeys[_currentStep].currentState.validate()) {
+      if (formKeys[_currentStep].currentState!.validate()) {
         setState(() {
           stepStates[_currentStep][stepStates[_currentStep].keys.single] =
               StepState.complete;
@@ -572,7 +582,7 @@ class _PageFormState extends State<PageForm> {
     }
 
     _onLastStep() {
-      if (formKeys[_currentStep].currentState.validate()) {
+      if (formKeys[_currentStep].currentState!.validate()) {
         setState(() {
           stepStates[_currentStep][stepStates[_currentStep].keys.single] =
               StepState.complete;
@@ -599,10 +609,7 @@ class _PageFormState extends State<PageForm> {
                   }
                 });
 
-                DialogUtils.showCustomDialog(context, notFinishForm,
-                    onSubmit: (langCode) {
-                  reportView(context, priceData, langCode);
-                });
+                DialogUtils.showCustomDialog(context, notFinishForm, onSubmit: (langCode) => reportView(context, priceData, langCode));
               },
               style: ElevatedButton.styleFrom(shadowColor: Colors.transparent),
               child: Text("FINISH"))
@@ -613,8 +620,7 @@ class _PageFormState extends State<PageForm> {
         type: StepperType.vertical,
         currentStep: _currentStep,
         onStepTapped: (step) => goTo(step),
-        controlsBuilder: (BuildContext context,
-            {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+        controlsBuilder: (BuildContext context, ControlsDetails controlsDetails, {VoidCallback? onStepContinue, VoidCallback? onStepCancel}) {
           if (_currentStep == steps.length - 1 || _currentStep == 0) {
             return Row(
               children: <Widget>[
@@ -699,10 +705,10 @@ class _PageFormState extends State<PageForm> {
               ],
             );
           }
-        },
+        }
+        ,
       ),
     );
   }
+  void generatePDF() {}
 }
-
-void generatePDF() {}

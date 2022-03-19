@@ -1,3 +1,4 @@
+import '../lang/mlocalization.dart';
 import 'pdf_viewer_page.dart';
 import 'package:pdf/pdf.dart';
 import 'dart:io';
@@ -6,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:price_report/model_pricedata.dart';
 import 'package:price_report/helper/helper_formula.dart';
-import 'file:///C:/Users/jetwiz/Documents/Flutter%20Project/price_report/lib/lang/mlocalization.dart';
 
 reportView(context, ModelPriceData data, String languageCode) async {
   final Document pdf = Document();
@@ -59,25 +59,25 @@ reportView(context, ModelPriceData data, String languageCode) async {
             Text("${lang.x("Total Harga")}: ${currencyFormat(data.allEmployeePrice)}"),
             Text("${lang.x("Harga Per-karyawan")}: ${currencyFormat(data.pricePerEmployee)}"),
             Text("${lang.x("Harga Setelah Diskon")}: ${currencyFormat(data.afterDiscEmployee)}"),
-            Text("${_ket(lang.x("Keterangan 1"), data.ket1)}"),
+            Text("${_ket(lang.x("Keterangan 1")!, data.ket1)}"),
 
             Padding(padding: const EdgeInsets.all(10)),
             Text("${lang.x("Harga Training")}: ${currencyFormat(data.hargaTraining)}"),
             Text("${lang.x("Diskon Training")}: ${discountFormat(data.diskonTraining)}"),
             Text("${lang.x("Harga Setelah Diskon")}: ${currencyFormat(data.afterDiscTraining)}"),
-            Text("${_ket(lang.x("Keterangan 2"), data.ket2)}"),
+            Text("${_ket(lang.x("Keterangan 2")!, data.ket2)}"),
 
             Padding(padding: const EdgeInsets.all(10)),
             Text("${lang.x("Harga Implementasi")}: ${currencyFormat(data.hargaImplementasi)}"),
             Text("${lang.x("Diskon Implementasi")}: ${discountFormat(data.diskonImplementasi)}"),
             Text("${lang.x("Harga Setelah Diskon")}: ${currencyFormat(data.afterDiscImplementasi)}"),
-            Text("${_ket(lang.x("Keterangan 3"), data.ket3)}"),
+            Text("${_ket(lang.x("Keterangan 3")!, data.ket3)}"),
 
             Padding(padding: const EdgeInsets.all(10)),
             Text("${lang.x("Harga Modifikasi")}: ${currencyFormat(data.hargaModifikasi)}"),
             Text("${lang.x("Diskon Modifikasi")}: ${discountFormat(data.diskonModifikasi)}"),
             Text("${lang.x("Harga Setelah Diskon")}: ${currencyFormat(data.afterDiscModifikasi)}"),
-            Text("${_ket(lang.x("Keterangan 4"), data.ket4)}"),
+            Text("${_ket(lang.x("Keterangan 4")!, data.ket4)}"),
 
             Padding(padding: const EdgeInsets.all(10)),
             Text("${lang.x("Email Sales")}: ${_val(data.emailSales)}"),
@@ -89,7 +89,8 @@ reportView(context, ModelPriceData data, String languageCode) async {
   final String dir = (await getTemporaryDirectory()).path;
   final String path = '$dir/report.pdf';
   final File file = File(path);
-  await file.writeAsBytes(pdf.save());
+  var tes = await pdf.save();
+  await file.writeAsBytes(tes);
   material.Navigator.of(context).push(
     material.MaterialPageRoute(
       builder: (_) => PdfViewerPage(path: path, data: data, languageCode: languageCode),

@@ -28,6 +28,8 @@ int totalPerkaryawan(int totalKaryawan) {
   if(totalKaryawan >= 1000) {
     return 5500;
   }
+
+  return 0;
 }
 
 int finalPrice(int firstPrice, int diskon) {

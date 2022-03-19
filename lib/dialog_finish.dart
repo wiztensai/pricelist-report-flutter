@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DialogUtils {
   static void showCustomDialog(
       BuildContext context, List<Map<String, StepState>> notFinishForm,
-      {@required Function onSubmit(langCode)}) {
+      {required Function onSubmit(String langCode)}) {
     String message =
         "Please recheck form before generate PDF! Make sure all section fill out:\n\n";
     notFinishForm.forEach((element) {

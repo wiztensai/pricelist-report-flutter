@@ -5,8 +5,7 @@ class DiscountInputFormatter extends TextInputFormatter {
   // DiscountInputFormatter({this.maxNumbers});
   final int maxNumbers = 100;
 
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
 
     if (newValue.selection.baseOffset == 0) {
       return newValue;
@@ -21,5 +20,7 @@ class DiscountInputFormatter extends TextInputFormatter {
     if (int.parse(newValue.text) > maxNumbers) {
       return oldValue;
     }
+
+    return oldValue; // todo: SEMENTARA. BUGFIX, ini yang error
   }
 }
